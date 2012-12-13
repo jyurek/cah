@@ -2,13 +2,19 @@ source 'http://rubygems.org'
 
 gem 'hiredis'
 gem 'thin'
-gem 'sinatra'
+gem 'sinatra', require: 'sinatra/base'
 gem 'sinatra-backbone', require: 'sinatra/backbone'
+gem 'sinatra-contrib', require: 'sinatra/cookies'
+gem 'rack'
+gem 'multi_json'
 
 group :test do
   gem 'pry'
+  gem 'mocha'
   gem 'rspec'
   gem 'jasmine'
   gem 'capybara'
   gem 'capybara-webkit'
+  gem 'rack-test', require: 'rack/test'
+  gem 'show_me_the_cookies'
 end

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-feature 'Two people start a game' do
+feature 'Two people start a game', js: true do
   scenario 'where one creates it and the other joins' do
     player_one_visits_the_site
     player_one_starts_a_game
