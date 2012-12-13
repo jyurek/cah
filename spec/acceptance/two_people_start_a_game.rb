@@ -22,7 +22,7 @@ feature 'Two people start a game' do
 
   def player_one_starts_a_game
     as_player_one do
-      click_button("Start New Game")
+      click_link("Start New Game")
     end
   end
 
@@ -49,7 +49,7 @@ feature 'Two people start a game' do
   def player_two_joins_the_game_with_code(code)
     as_player_two do
       fill_in(".code", with: code)
-      click_button "Join Game"
+      click_link "Join Game"
     end
   end
 
