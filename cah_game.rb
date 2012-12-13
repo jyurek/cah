@@ -20,13 +20,20 @@ class CahGame < Sinatra::Base
 
   post '/games' do
     game = Game.new
-    game.players << current_player
+    game.players << player_id
     game.start
 
     game.to_json
   end
 
+  get '/games/:code/cards' do |code|
+  end
+
   def set_player_id_unless_set
     cookies['player_id'] ||= SecureRandom.uuid
+  end
+
+  def player_id
+    cookies['player_id']
   end
 end
