@@ -11,9 +11,21 @@
   <script src="/js/application.js"></script>
 </head>
 <body>
-  <div id="game">
-  </div>
-  <div id="code">
-  </div>
+  <header>
+    <h1>Cards Against Humanity</h1>
+    <h2>A webapp-based card game for horrible people.</h2>
+  </header>
+
+  <form method="post" action="/games">
+    <button class="new-game">Start New Game</button>
+  </form>
+  <form action="/games/:code">
+    <input name="code" type="numbers">
+    <button class="join-name">Join a Game</button>
+  </form>
+
+  <footer>
+    This is in no way licenced or even condoned by the real makers of Cards Against Humanity, so there's a good chance we'll get a C&amp;D. Enjoy while it lasts.
+  </footer>
 </body>
 </html>
