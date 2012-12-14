@@ -1,13 +1,13 @@
 class Game
-  attr_accessor :code, :players, :czar
+  attr_accessor :code, :players, :czar, :current_black_card
 
   def initialize(player = nil)
     @players = [player].compact
     @code = Code.new.to_s
     @czar = player
 
-    @white_cards = Deck.new("data/white_cards").to_a
-    @black_cards = Deck.new("data/black_cards").to_a
+    @white_cards = Deck.new("data/white_cards").to_a.shuffle
+    @black_cards = Deck.new("data/black_cards").to_a.shuffle
   end
 
   def self.find(code)
@@ -16,12 +16,17 @@ class Game
     game
   end
 
+  def start
+    @current_black_card = @black_cards.pop
+  end
+
   def save
     store("players", @players)
     store("white", @white_cards)
     store("black", @black_cards)
     store("code", @code)
     store("czar", @czar)
+    store("current_black_card", @current_black_card)
   end
 
   def store(key, value)
@@ -34,6 +39,7 @@ class Game
     @white_cards = fetch("white")
     @black_cards = fetch("black")
     @czar = fetch("czar")
+    @current_black_card = fetch("current_black_card")
   end
 
   def fetch(key)
@@ -51,6 +57,7 @@ class Game
   def to_json
     MultiJson.dump(
       code: code.to_s,
+      current_black_card: current_black_card,
       players: players,
       czar: czar
     )

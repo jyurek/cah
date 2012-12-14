@@ -13,11 +13,10 @@ class HomeView extends Backbone.View
     @collection.create({}, {wait: true})
 
   joinGame: ->
-    console.log $('.join-code').val()
     game = new Game(id: $('.join-code').val())
     game.fetch success: =>
-      console.log game
       @collection.add(game)
+
 
 class Game extends Backbone.Model
   initialize: ->
@@ -37,7 +36,6 @@ class Game extends Backbone.Model
     @channel = @pusher.subscribe(@code())
     @channel.bind 'cah:new_player', (data) =>
       $(@).trigger('new_player', data)
-
 
 class GameCollection extends Backbone.Collection
   model: Game
@@ -65,7 +63,16 @@ class InformationView extends Backbone.View
   render: ->
     @$el.html(JST['information'](code: @model.get('code'), players: @model.get('players')))
 
+class Card extends Backbone.Model
+
+class Cards extends Backbone.Collection
+  model: Card
+  url: ->
+    "/games/#{@game.code()}/cards"
+
 class PlayAreaView extends Backbone.View
+  initialize: ->
+
   render: ->
     if @model.is_czar($.cookie('player_id'))
       new CzarView(el: '#playarea', model: @model).render()
@@ -75,11 +82,12 @@ class PlayAreaView extends Backbone.View
 class CzarView extends Backbone.View
   render: ->
     @$el.addClass("czar")
+    @$el.html(@model.get('current_black_card'))
 
 class HandView extends Backbone.View
   render: ->
     @$el.removeClass("czar")
+    @$el.html("Current Black Card: #{@model.get('current_black_card')}")
 
 jQuery ->
   new HomeView(el: 'body', collection: new GameCollection()).render()
-

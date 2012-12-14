@@ -22,6 +22,7 @@ class CahGame < Sinatra::Base
 
   post '/games' do
     game = Game.new(current_player)
+    game.start
     game.save
     game.to_json
   end
@@ -34,7 +35,20 @@ class CahGame < Sinatra::Base
     game.to_json
   end
 
-  get '/games/:code/cards' do |code|
+  get '/players/:id/cards' do |id|
+    # list hand cards
+  end
+
+  post '/players/:id/cards' do |id|
+    # draw a card
+  end
+
+  post '/games/:code/plays' do |code|
+    # play cards
+  end
+
+  post '/games/:code/winner' do |code|
+    # pick winner
   end
 
   def current_player

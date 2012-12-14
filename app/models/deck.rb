@@ -12,6 +12,6 @@ class Deck
   end
 
   def to_a
-    @cards
+    @cards[1..-1].compact
   end
 end

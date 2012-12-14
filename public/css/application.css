@@ -1,0 +1,17 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+#home {
+  margin: 0 10px;
+}
+
+#playarea {
+  padding: 10px;
+}
+
+.czar {
+  background-color: #000;
+  color: #fff;
+}
