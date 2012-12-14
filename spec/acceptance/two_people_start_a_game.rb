@@ -28,7 +28,13 @@ feature 'Two people start a game', js: true do
 
   def player_one_is_card_czar
     as_player_one do
-      page.should have_css("#game.czar")
+      page.should have_css("#playarea.czar")
+    end
+  end
+
+  def player_one_gets_the_code
+    as_player_one do
+      page.find("#information .code").text
     end
   end
 

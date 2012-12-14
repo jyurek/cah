@@ -6,8 +6,8 @@ describe 'Games' do
       post '/games'
       last_response.status.should == 200
 
-      document = JSON.parse(last_response.body)
-      document.code.should_not be_nil
+      document = MultiJson.load(last_response.body)
+      document['code'].should eq "aaaaa"
     end
   end
 end

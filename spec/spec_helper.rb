@@ -22,3 +22,4 @@ RSpec.configure do |config|
   config.include ShowMeTheCookies
   config.mock_framework = :mocha
 end
+

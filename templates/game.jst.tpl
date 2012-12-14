@@ -1,6 +1,4 @@
-<section id="game">
+<section id="playarea">
 </section>
 <section id="information">
-  <ol class="updates"></ol>
-  <section class="code"></section>
 </section>

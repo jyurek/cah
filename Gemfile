@@ -1,6 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'hiredis'
+gem "redis", ">= 2.2.0", :require => ["redis", "redis/connection/hiredis"]
 gem 'thin'
 gem 'sinatra', require: 'sinatra/base'
 gem 'sinatra-backbone', require: 'sinatra/backbone'

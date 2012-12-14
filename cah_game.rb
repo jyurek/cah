@@ -3,8 +3,9 @@ require 'bundler'
 require 'securerandom'
 Bundler.require
 
-require './app/models/code'
-require './app/models/game'
+Dir.glob("./app/models/*") do |file|
+  require file
+end
 
 class CahGame < Sinatra::Base
   helpers Sinatra::Cookies
@@ -14,26 +15,20 @@ class CahGame < Sinatra::Base
   set :views, File.dirname(__FILE__) + '/templates'
 
   get '/' do
-    set_player_id_unless_set
+    current_player
     erb :home
   end
 
   post '/games' do
-    game = Game.new
-    game.players << player_id
-    game.start
-
+    game = Game.new(current_player)
     game.to_json
   end
 
   get '/games/:code/cards' do |code|
   end
 
-  def set_player_id_unless_set
+  def current_player
+    cookies.options[:httponly] = false
     cookies['player_id'] ||= SecureRandom.uuid
-  end
-
-  def player_id
-    cookies['player_id']
   end
 end
