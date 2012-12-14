@@ -25,11 +25,15 @@ class Storage
     end
   end
 
-  def store_deck(subkey, value)
-    store_array(subkey, value.to_a)
+  def fetch(subkey)
+    send("fetch_#{REDIS.type(key(subkey))}", subkey)
   end
 
-  def store_code(subkey, value)
-    store_string(subkey, value.to_s)
+  def fetch_string(subkey)
+    REDIS.get(key(subkey))
+  end
+
+  def fetch_list(subkey)
+    REDIS.lrange(key(subkey), 0, -1)
   end
 end

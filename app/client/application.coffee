@@ -13,23 +13,52 @@ class HomeView extends Backbone.View
     @collection.create({}, {wait: true})
 
   joinGame: ->
-    @collection.get(code)
+    console.log $('.join-code').val()
+    game = new Game(id: $('.join-code').val())
+    game.fetch()
+    @collection.add(game)
 
 class Game extends Backbone.Model
+  initialize: ->
+    @pusher = new Pusher('0174638fca8826a47603', encrypted: true)
+    @on 'change:code', @subscribe
+
+  urlRoot: ->
+    'games'
+
+  code: ->
+    @get('code')
+
   is_czar: (player_id) ->
     player_id == @get('czar')
 
-class window.GameCollection extends Backbone.Collection
+  subscribe: =>
+    @channel = @pusher.subscribe(@code())
+    @channel.bind 'cah:new_player', (data) =>
+      $(@).trigger('new_player', data)
+
+
+class GameCollection extends Backbone.Collection
   model: Game
   url: '/games'
 
 class GameView extends Backbone.View
+  initialize: ->
+
   render: ->
     @$el.html(JST['game']())
     new InformationView(el: '#information', model: @model).render()
     new PlayAreaView(el: '#playarea', model: @model).render()
 
 class InformationView extends Backbone.View
+  initialize: ->
+    $(@model).on('new_player', @newPlayer)
+
+  newPlayer: (event, player_id) =>
+    console.log player_id
+    @model.get('players').push player_id
+    @render()
+
   render: ->
     @$el.html(JST['information'](code: @model.get('code'), players: @model.get('players')))
 

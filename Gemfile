@@ -8,6 +8,7 @@ gem 'sinatra-backbone', require: 'sinatra/backbone'
 gem 'sinatra-contrib', require: 'sinatra/cookies'
 gem 'rack'
 gem 'multi_json'
+gem 'pusher'
 
 group :test do
   gem 'pry'

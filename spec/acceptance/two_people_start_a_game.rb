@@ -40,8 +40,8 @@ feature 'Two people start a game', js: true do
 
   def player_one_sees_someone_joined
     as_player_one do
-      within('#information') do
-        page.should have_css(".new_player")
+      within('#information .players') do
+        page.should have_content("Players: 2")
       end
     end
   end

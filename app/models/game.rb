@@ -1,15 +1,19 @@
 class Game
   attr_accessor :code, :players, :czar
 
-  def initialize(player)
-    @players = [player]
-    @code = Code.new
+  def initialize(player = nil)
+    @players = [player].compact
+    @code = Code.new.to_s
     @czar = player
 
-    @white_cards = Deck.new("data/white_cards")
-    @black_cards = Deck.new("data/black_cards")
+    @white_cards = Deck.new("data/white_cards").to_a
+    @black_cards = Deck.new("data/black_cards").to_a
+  end
 
-    save
+  def self.find(code)
+    game = Game.new
+    game.load(code)
+    game
   end
 
   def save
@@ -21,8 +25,23 @@ class Game
   end
 
   def store(key, value)
+    storage.store(key, value)
+  end
+
+  def load(code)
+    @code = code
+    @players = fetch("players")
+    @white_cards = fetch("white")
+    @black_cards = fetch("black")
+    @czar = fetch("czar")
+  end
+
+  def fetch(key)
+    storage.fetch(key)
+  end
+
+  def storage
     @storage ||= Storage.new("game:#{code}")
-    @storage.store(key, value)
   end
 
   def key(extra)

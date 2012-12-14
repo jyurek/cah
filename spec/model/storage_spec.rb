@@ -24,4 +24,22 @@ describe Storage do
 
     Storage::REDIS.lrange("abcd:array", 0, -1).should eq %w(one two three)
   end
+
+  it 'can load a string from Redis' do
+    Storage::REDIS.del("abcd:string")
+    Storage::REDIS.set("abcd:string", "this is a string")
+    store = Storage.new("abcd")
+
+    store.fetch("string").should eq "this is a string"
+  end
+
+  it 'can load an array from Redis' do
+    Storage::REDIS.del("abcd:array")
+    Storage::REDIS.rpush("abcd:array", "val1")
+    Storage::REDIS.rpush("abcd:array", "val2")
+    Storage::REDIS.rpush("abcd:array", "val3")
+    store = Storage.new("abcd")
+
+    store.fetch("array").should eq %w(val1 val2 val3)
+  end
 end
