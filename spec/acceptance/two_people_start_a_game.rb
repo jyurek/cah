@@ -54,7 +54,7 @@ feature 'Two people start a game', js: true do
 
   def player_two_joins_the_game_with_code(code)
     as_player_two do
-      fill_in(".code", with: code)
+      fill_in("code", with: code)
       click_link "Join Game"
     end
   end
