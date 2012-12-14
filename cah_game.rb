@@ -28,7 +28,7 @@ class CahGame < Sinatra::Base
 
   get '/games/:code' do |code|
     game = Game.find(code)
-    game.players << current_player
+    game.players = (game.players + [current_player]).uniq
     game.save
     pusher.trigger(code, 'cah:new_player', current_player)
     game.to_json

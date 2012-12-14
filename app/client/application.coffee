@@ -15,8 +15,9 @@ class HomeView extends Backbone.View
   joinGame: ->
     console.log $('.join-code').val()
     game = new Game(id: $('.join-code').val())
-    game.fetch()
-    @collection.add(game)
+    game.fetch success: =>
+      console.log game
+      @collection.add(game)
 
 class Game extends Backbone.Model
   initialize: ->
@@ -55,8 +56,10 @@ class InformationView extends Backbone.View
     $(@model).on('new_player', @newPlayer)
 
   newPlayer: (event, player_id) =>
-    console.log player_id
-    @model.get('players').push player_id
+    players = @model.get('players')
+    players.push(player_id)
+    players = _.uniq(players)
+    @model.set(players: players)
     @render()
 
   render: ->

@@ -20,6 +20,7 @@ class Storage
   end
 
   def store_array(subkey, values)
+    REDIS.del(key(subkey))
     values.each do |value|
       REDIS.rpush(key(subkey), value)
     end
