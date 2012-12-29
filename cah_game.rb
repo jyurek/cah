@@ -21,34 +21,41 @@ class CahGame < Sinatra::Base
   end
 
   post '/games' do
-    game = Game.new(current_player)
-    game.start
+    game = Game.new
+    player = game.add_player(current_player)
+    game.deal_hand_to(player)
     game.save
     game.to_json
   end
 
   get '/games/:code' do |code|
     game = Game.find(code)
-    game.players = (game.players + [current_player]).uniq
-    game.save
-    pusher.trigger(code, 'cah:new_player', current_player)
     game.to_json
   end
 
-  get '/players/:id/cards' do |id|
-    # list hand cards
+  post '/games/:code/player' do |code|
+    game = Game.find(code)
+    player = game.add_player(current_player)
+    game.deal_hand_to(player)
+    game.save
+    unless player.existing_player
+      pusher.trigger(game.code.to_s, "cah:new_player", nil)
+    end
+    player.to_json
   end
 
-  post '/players/:id/cards' do |id|
-    # draw a card
+  get '/games/:code/player' do |code|
+    player = Player.find(current_player_id)
+    player.to_json
   end
 
-  post '/games/:code/plays' do |code|
-    # play cards
-  end
-
-  post '/games/:code/winner' do |code|
-    # pick winner
+  post '/games/:code/answer' do |code|
+    game = Game.find(code)
+    game.answer(current_player, params['card_names'])
+    pusher.trigger(game.code.to_s, "cah:answer_submitted",
+                   player: current_player, cards: params['card_names'])
+    game.save
+    game.to_json
   end
 
   def current_player

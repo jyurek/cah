@@ -25,6 +25,13 @@ describe Storage do
     Storage::REDIS.lrange("abcd:array", 0, -1).should eq %w(one two three)
   end
 
+  it 'can store nothing in redis' do
+    store = Storage.new("abcd")
+    store.store('nil', nil)
+
+    Storage::REDIS.type("abcd:nil").should eq 'none'
+  end
+
   it 'can load a string from Redis' do
     Storage::REDIS.del("abcd:string")
     Storage::REDIS.set("abcd:string", "this is a string")
@@ -41,5 +48,12 @@ describe Storage do
     store = Storage.new("abcd")
 
     store.fetch("array").should eq %w(val1 val2 val3)
+  end
+
+  it 'can load nothing from redis' do
+    Storage::REDIS.del("abcd:nil")
+    store = Storage.new("abcd")
+
+    store.fetch('abcd:nil').should be_nil
   end
 end

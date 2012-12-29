@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.3.2)
+    awesome_print (1.0.2)
     backports (2.6.5)
     capybara (1.1.4)
       mime-types (>= 1.16)
@@ -95,6 +96,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  awesome_print
   capybara
   capybara-webkit
   hiredis

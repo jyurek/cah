@@ -1,13 +1,17 @@
 class Game
-  attr_accessor :code, :players, :czar, :current_black_card
+  class << self
+    attr_accessor :white_card_path
+    attr_accessor :black_card_path
+  end
+  self.white_card_path = "data/white_cards"
+  self.black_card_path = "data/black_cards"
 
-  def initialize(player = nil)
-    @players = [player].compact
-    @code = Code.new.to_s
-    @czar = player
+  attr_accessor :code, :players, :play_order, :current_black_card, :storage, :white_cards, :black_cards
 
-    @white_cards = Deck.new("data/white_cards").to_a.shuffle
-    @black_cards = Deck.new("data/black_cards").to_a.shuffle
+  def initialize
+    @code = Code.new
+    @play_order = []
+    @players = {}
   end
 
   def self.find(code)
@@ -16,30 +20,8 @@ class Game
     game
   end
 
-  def start
-    @current_black_card = @black_cards.pop
-  end
-
-  def save
-    store("players", @players)
-    store("white", @white_cards)
-    store("black", @black_cards)
-    store("code", @code)
-    store("czar", @czar)
-    store("current_black_card", @current_black_card)
-  end
-
   def store(key, value)
     storage.store(key, value)
-  end
-
-  def load(code)
-    @code = code
-    @players = fetch("players")
-    @white_cards = fetch("white")
-    @black_cards = fetch("black")
-    @czar = fetch("czar")
-    @current_black_card = fetch("current_black_card")
   end
 
   def fetch(key)
@@ -50,16 +32,67 @@ class Game
     @storage ||= Storage.new("game:#{code}")
   end
 
-  def key(extra)
-    "game:#{code}:#{extra}"
+  def save
+    storage.store("code", code)
+    storage.store("current_black_card", current_black_card)
+    storage.store("black_cards", black_cards)
+    storage.store("white_cards", white_cards)
+    storage.store("play_order", play_order)
+    storage.store("players", players)
   end
 
-  def to_json
+  def load(code)
+    @code = Code.new.set(code)
+    @white_cards = Deck.new(storage.fetch("white_cards"))
+    @black_cards = Deck.new(storage.fetch("black_cards"))
+    @current_black_card = storage.fetch("current_black_card")
+    @play_order = storage.fetch("play_order") || []
+    @players = {}
+    (storage.fetch("players") || []).each do |key, val|
+      @players[key] = Player.new(val)
+    end
+  end
+
+  def add_player(player_id)
+    player = self.players[player_id] || Player.new
+    if play_order.include?(player_id)
+      player.existing_player = true
+    else
+      play_order << player_id
+    end
+    self.players[player_id] = player
+    player
+  end
+
+  def white_cards
+    @white_cards ||= Deck.load(self.class.white_card_path)
+  end
+
+  def black_cards
+    @black_cards ||= Deck.load(self.class.black_card_path)
+  end
+
+  def current_black_card
+    @current_black_card ||= black_cards.draw
+  end
+
+  def deal_hand_to(player)
+    hand_size = player.cards.length
+    (hand_size...10).each do
+      player.cards << white_cards.draw
+    end
+  end
+
+  def czar
+    players[play_order.first]
+  end
+
+  def to_json(state = nil)
     MultiJson.dump(
       code: code.to_s,
       current_black_card: current_black_card,
       players: players,
-      czar: czar
+      play_order: play_order
     )
   end
 end

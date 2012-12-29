@@ -11,7 +11,12 @@ class Code
 
     random = rng.random_number(upper - lower)
     base = random + lower
-    @code = base.to_s(36)
+    @code = base.to_s(36).downcase
+  end
+
+  def set(code)
+    @code = code.to_s.downcase
+    self
   end
 
   def rng
@@ -20,5 +25,9 @@ class Code
 
   def to_s
     @code
+  end
+
+  def ==(other)
+    to_s == other.to_s
   end
 end

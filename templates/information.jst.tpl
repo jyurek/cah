@@ -1,3 +1,4 @@
 <ol class="updates"></ol>
-<section class="code"><%= code %></section>
-<section class="players">Players: <%= players.length %></section>
+<section class="code"><%= game.code %></section>
+<section class="answers"></section>
+<section class="players">Players: <%= game.play_order.length %></section>

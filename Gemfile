@@ -9,9 +9,10 @@ gem 'sinatra-contrib', require: 'sinatra/cookies'
 gem 'rack'
 gem 'multi_json'
 gem 'pusher'
+gem 'pry'
+gem 'awesome_print'
 
 group :test do
-  gem 'pry'
   gem 'mocha'
   gem 'rspec'
   gem 'jasmine'

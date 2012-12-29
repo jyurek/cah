@@ -1,4 +1,4 @@
-<section id="playarea">
+<section class="playarea">
 </section>
-<section id="information">
+<section class="information">
 </section>

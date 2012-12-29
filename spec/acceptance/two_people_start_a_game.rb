@@ -28,19 +28,19 @@ feature 'Two people start a game', js: true do
 
   def player_one_is_card_czar
     as_player_one do
-      page.should have_css("#playarea.czar")
+      page.should have_css(".czar")
     end
   end
 
   def player_one_gets_the_code
     as_player_one do
-      page.find("#information .code").text
+      page.find(".code").text
     end
   end
 
   def player_one_sees_someone_joined
     as_player_one do
-      within('#information .players') do
+      within('.players') do
         page.should have_content("Players: 2")
       end
     end

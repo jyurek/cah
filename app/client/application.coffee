@@ -1,93 +1,130 @@
+my_player_id = $.cookie('player_id')
+pusher = null;
+
 class HomeView extends Backbone.View
   events:
     'click .new-game': 'newGame'
-    'click .join-game': 'joinGame'
-
-  initialize: ->
-    @collection.on('add', @startGame)
-
-  startGame: (game) =>
-    new GameView(el: 'body', model: game).render()
+    'click .join-game': 'loadGame'
 
   newGame: ->
-    @collection.create({}, {wait: true})
+    $.ajax '/games',
+      type: 'POST',
+      dataType: "json",
+      success: (data) =>
+        game = new Game(data)
+        game.join()
+        game.start()
 
-  joinGame: ->
-    game = new Game(id: $('.join-code').val())
-    game.fetch success: =>
-      @collection.add(game)
+  loadGame: ->
+    game_code = $('.join-code').val()
+    $.ajax "/games/#{game_code}",
+      type: 'GET',
+      dataType: "json",
+      success: (data) =>
+        game = new Game(data)
+        game.join()
+        game.start()
 
+class Game
+  constructor: (object) ->
+    @populateWith(object)
+    @events = pusher.subscribe(@code)
 
-class Game extends Backbone.Model
-  initialize: ->
-    @pusher = new Pusher('0174638fca8826a47603', encrypted: true)
-    @on 'change:code', @subscribe
+  populateWith: (object) ->
+    @code = object.code
+    @players = object.players
+    @play_order = object.play_order
+    @current_black_card = object.current_black_card
 
-  urlRoot: ->
-    'games'
+  fetch: ->
+    $.ajax "/games/#{@code}",
+      async: false,
+      type: "GET",
+      dataType: "json",
+      success: (data) =>
+        @populateWith(data)
+        console.log(data)
 
-  code: ->
-    @get('code')
+  join: ->
+    $.ajax "/games/#{@code}/player",
+      async: false,
+      type: "POST",
+      dataType: "json",
+      success: (data) =>
+        console.log(data)
 
-  is_czar: (player_id) ->
-    player_id == @get('czar')
+  start: ->
+    @fetch()
+    @gameView ||= new GameView(el: 'body', model: this)
+    @gameView.render()
 
-  subscribe: =>
-    @channel = @pusher.subscribe(@code())
-    @channel.bind 'cah:new_player', (data) =>
-      $(@).trigger('new_player', data)
+  is_czar: ->
+    my_player_id == @play_order[0]
 
-class GameCollection extends Backbone.Collection
-  model: Game
-  url: '/games'
+  myCards: ->
+    @players[my_player_id]
 
 class GameView extends Backbone.View
-  initialize: ->
-
   render: ->
-    @$el.html(JST['game']())
-    new InformationView(el: '#information', model: @model).render()
-    new PlayAreaView(el: '#playarea', model: @model).render()
+    @$el.html(JST['game'])
+    new InformationView(el: '.information', model: @model).render()
+    new PlayAreaView(el: '.playarea', model: @model).render()
 
 class InformationView extends Backbone.View
   initialize: ->
-    $(@model).on('new_player', @newPlayer)
-
-  newPlayer: (event, player_id) =>
-    players = @model.get('players')
-    players.push(player_id)
-    players = _.uniq(players)
-    @model.set(players: players)
-    @render()
+    @model.events.bind "cah:new_player", =>
+      @model.fetch()
+      @render()
 
   render: ->
-    @$el.html(JST['information'](code: @model.get('code'), players: @model.get('players')))
-
-class Card extends Backbone.Model
-
-class Cards extends Backbone.Collection
-  model: Card
-  url: ->
-    "/games/#{@game.code()}/cards"
+    @$el.html(JST['information'](game: @model))
 
 class PlayAreaView extends Backbone.View
-  initialize: ->
-
   render: ->
-    if @model.is_czar($.cookie('player_id'))
-      new CzarView(el: '#playarea', model: @model).render()
+    if @model.is_czar()
+      new CzarView(el: '.playarea', model: @model).render()
     else
-      new HandView(el: '#playarea', model: @model).render()
+      new HandView(el: '.playarea', model: @model).render()
 
 class CzarView extends Backbone.View
   render: ->
-    @$el.addClass("czar")
-    @$el.html(@model.get('current_black_card'))
+    $('body').addClass("czar")
+    @$el.html(@model.current_black_card)
 
 class HandView extends Backbone.View
-  render: ->
-    @$el.removeClass("czar")
-    @$el.html("Current Black Card: #{@model.get('current_black_card')}")
+  events:
+    "click .card" : "selectCard"
+    "click .use-cards" : "playCards"
 
-jQuery ->
-  new HomeView(el: 'body', collection: new GameCollection()).render()
+  render: ->
+    $('body').removeClass("czar")
+    @$el.html(JST['hand'](game: @model))
+
+  selectCard: (event) ->
+    target = event.currentTarget
+    $(target).toggleClass("selected")
+    if $(target).is(".selected")
+      $(target).attr("data-click-time", new Date().getTime())
+    $(".use-cards").toggle(($(".cards .selected").length > 0))
+
+  playCards: ->
+    cards = @removeCards()
+    card_names = _.map cards, (e) ->
+      e.innerText
+    $.ajax "/games/#{@model.code}/answer",
+      type: "POST",
+      dataType: "json",
+      data:
+        card_names:
+          card_names
+      success: (response) ->
+        console.log(response)
+
+  removeCards: ->
+    cards = $(".cards .selected").remove()
+    cards = _.sortBy cards.toArray(), (e) ->
+      $(e).attr('data-click-time')
+
+$ ->
+  pusher = new Pusher('0174638fca8826a47603', encrypted: true)
+  new HomeView(el: 'body')
