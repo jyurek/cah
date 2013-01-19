@@ -35,6 +35,7 @@ class Game
     @players = object.players
     @play_order = object.play_order
     @current_black_card = object.current_black_card
+    @answers = object.answers
 
   fetch: ->
     $.ajax "/games/#{@code}",
@@ -43,7 +44,6 @@ class Game
       dataType: "json",
       success: (data) =>
         @populateWith(data)
-        console.log(data)
 
   join: ->
     $.ajax "/games/#{@code}/player",
@@ -64,7 +64,23 @@ class Game
   myCards: ->
     @players[my_player_id]
 
+  whitePlayerCount: ->
+    Object.keys(@players).length - 1
+
+  answerCount: ->
+    Object.keys(@answers).length
+
+  answersReady: ->
+    @whitePlayerCount() == @answerCount() && @whitePlayerCount() > 0
+
 class GameView extends Backbone.View
+  initialize: ->
+    @model.events.bind "cah:answer_submitted", @answerReceived
+
+  answerReceived: (data) =>
+    @model.answers[data['player']] = data['cards']
+    @render()
+
   render: ->
     @$el.html(JST['game'])
     new InformationView(el: '.information', model: @model).render()
@@ -87,9 +103,16 @@ class PlayAreaView extends Backbone.View
       new HandView(el: '.playarea', model: @model).render()
 
 class CzarView extends Backbone.View
+  events:
+    "click .read-answers": "readAnswers"
+
   render: ->
     $('body').addClass("czar")
-    @$el.html(@model.current_black_card)
+    @$el.html(JST['czar'](game: @model))
+    $('.read-answers').toggle(@model.answersReady())
+
+  readAnswers: ->
+    $('.answers').show()
 
 class HandView extends Backbone.View
   events:

@@ -41,7 +41,7 @@ describe Game do
     game = Game.new
     game.current_black_card = "Card"
     game.players["12345"] = Player.new
-    game.to_json.should eq '{"code":"aaaaa","current_black_card":"Card","players":{"12345":[]},"play_order":[]}'
+    game.to_json.should eq '{"code":"aaaaa","current_black_card":"Card","players":{"12345":[]},"play_order":[],"answers":{}}'
   end
 
   it 'gets the current black card from the black deck' do
@@ -58,6 +58,21 @@ describe Game do
     game.deal_hand_to(player)
 
     player.cards.sort.should eq %w(0 1 2 3 4 5 6 7 8 9)
+  end
+
+  it 'moves cards from a players hand to the answers when they #answer' do
+    game = Game.new
+    player = Player.new
+    game.players["abcd"] = player
+    game.deal_hand_to(player)
+    answer_cards = [player.cards.sample, player.cards.sample]
+
+    game.answer("abcd", player.cards[0..2])
+
+    answer_cards.each do |card|
+      player.cards.should_not include(card)
+      game.answers["abcd"].should include(card)
+    end
   end
 
   it 'can dump and load itself' do

@@ -31,10 +31,6 @@ describe 'Games' do
     it 'picks a black card' do
       @document['current_black_card'].should eq "Black Card"
     end
-
-    it 'prints' do
-      p @document
-    end
   end
 
   context 'POST to /games/:code/player' do
@@ -56,10 +52,6 @@ describe 'Games' do
 
     it 'returns the new player\'s cards' do
       @document.should eq ['Card']*10
-    end
-
-    it 'prints' do
-      p @document
     end
   end
 
@@ -88,9 +80,31 @@ describe 'Games' do
     it 'still have player one as the czar' do
       @document['play_order'].should eq ['1234-56-78', 'abcd-ef-gh']
     end
+  end
 
-    it 'prints' do
-      p @document
+  context 'POST to /games/:code/answer' do
+    it 'stores the answers in the game' do
+      @game = Game.new
+      @game.players['abcd-ef-gh'] = ['A Card', 'Another Card']
+      @game.save
+      SecureRandom.stubs(:uuid).returns("abcd-ef-gh")
+
+      post '/games/aaaaa/answer', :card_names => "A Card"
+
+      @document = MultiJson.load(last_response.body)
+      @document['answers']['abcd-ef-gh'].should eq ['A Card']
+      @document['players']['abcd-ef-gh'].should eq ['Another Card']
+    end
+
+    it 'complains when you play a card you do not have' do
+      @game = Game.new
+      @game.players['abcd-ef-gh'] = ['A Card', 'Another Card']
+      SecureRandom.stubs(:uuid).returns("abcd-ef-gh")
+
+      post '/games/aaaaa/answer', :card_names => "The winning card"
+
+      p last_response
+      last_response.status.should eq 406
     end
   end
 end

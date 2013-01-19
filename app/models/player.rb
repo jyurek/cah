@@ -6,6 +6,10 @@ class Player
     @existing_player = false
   end
 
+  def play_cards(cards)
+    @cards -= cards
+  end
+
   def to_json(state = nil)
     MultiJson.dump(@cards)
   end

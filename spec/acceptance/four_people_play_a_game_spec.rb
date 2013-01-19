@@ -33,17 +33,6 @@ feature 'Four people play a game', js: true do
     end
   end
 
-  def player_one_starts_reading_answers(*answers)
-    as_player('1') do
-      click_button "Read Answers"
-      within(".answers") do
-        answers.each do |answer|
-          page.should have_content(answer)
-        end
-      end
-    end
-  end
-
   def player_joins_the_game_with_code(player, code)
     as_player(player) do
       visit '/'
@@ -59,8 +48,20 @@ feature 'Four people play a game', js: true do
       cards = page.all(".card")
       card = cards.sample
       card.click
+      card_text = card.text
       click_button("Use This Answer")
-      card.text
+      card_text
+    end
+  end
+
+  def player_one_starts_reading_answers(*answers)
+    as_player('1') do
+      click_button "Read Answers"
+      within(".answers") do
+        answers.each do |answer|
+          page.should have_content(answer)
+        end
+      end
     end
   end
 

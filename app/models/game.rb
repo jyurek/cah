@@ -6,12 +6,13 @@ class Game
   self.white_card_path = "data/white_cards"
   self.black_card_path = "data/black_cards"
 
-  attr_accessor :code, :players, :play_order, :current_black_card, :storage, :white_cards, :black_cards
+  attr_accessor :code, :players, :play_order, :current_black_card, :storage, :white_cards, :black_cards, :answers
 
   def initialize
     @code = Code.new
     @play_order = []
     @players = {}
+    @answers = {}
   end
 
   def self.find(code)
@@ -39,6 +40,7 @@ class Game
     storage.store("white_cards", white_cards)
     storage.store("play_order", play_order)
     storage.store("players", players)
+    storage.store("answers", MultiJson.dump(answers))
   end
 
   def load(code)
@@ -51,6 +53,7 @@ class Game
     (storage.fetch("players") || []).each do |key, val|
       @players[key] = Player.new(val)
     end
+    @answers = MultiJson.load(storage.fetch("answers") || "{}")
   end
 
   def add_player(player_id)
@@ -62,6 +65,12 @@ class Game
     end
     self.players[player_id] = player
     player
+  end
+
+  def answer(player, new_answers)
+    new_answers = [new_answers] unless new_answers.is_a?(Array)
+    players[player].play_cards(new_answers)
+    @answers[player] = new_answers
   end
 
   def white_cards
@@ -92,7 +101,8 @@ class Game
       code: code.to_s,
       current_black_card: current_black_card,
       players: players,
-      play_order: play_order
+      play_order: play_order,
+      answers: answers
     )
   end
 end
