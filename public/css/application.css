@@ -20,6 +20,18 @@ html, body {
   display: none;
 }
 
+#czar .answers .selected-answer {
+  border: 1px solid red;
+}
+
+ol.cards .selected {
+  border: 1px solid red;
+}
+
 .read-answers {
+  display: none;
+}
+
+.choose-winner {
   display: none;
 }

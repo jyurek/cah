@@ -51,7 +51,6 @@ class Game
       type: "POST",
       dataType: "json",
       success: (data) =>
-        console.log(data)
 
   start: ->
     @fetch()
@@ -63,6 +62,9 @@ class Game
 
   myCards: ->
     @players[my_player_id]
+
+  removeMyCards: (cards) ->
+    @players[my_player_id] = _.difference(@players[my_player_id], cards)
 
   whitePlayerCount: ->
     Object.keys(@players).length - 1
@@ -105,6 +107,8 @@ class PlayAreaView extends Backbone.View
 class CzarView extends Backbone.View
   events:
     "click .read-answers": "readAnswers"
+    "click ol.answers li": "selectAnswer"
+    "click .choose-winner": "chooseWinner"
 
   render: ->
     $('body').addClass("czar")
@@ -113,6 +117,20 @@ class CzarView extends Backbone.View
 
   readAnswers: ->
     $('.answers').show()
+    $('.read-answers').hide()
+    $('.choose-winner').show()
+
+  selectAnswer: (event) ->
+    $('ol.answers li').removeClass("selected-answer")
+    $(event.currentTarget).addClass("selected-answer")
+    $.ajax "/games/#{@model.code}/winner",
+      type: "POST",
+      dataType: "json",
+      data:
+        $('ol.answers .selected-answer')['data-player-id']
+      success: (response) ->
+
+  chooseWinner: ->
 
 class HandView extends Backbone.View
   events:
@@ -131,7 +149,8 @@ class HandView extends Backbone.View
     $(".use-cards").toggle(($(".cards .selected").length > 0))
 
   playCards: ->
-    cards = @removeCards()
+    cards = @selectedCards()
+    @model.removeMyCards(cards)
     card_names = _.map cards, (e) ->
       e.innerText
     $.ajax "/games/#{@model.code}/answer",
@@ -140,11 +159,10 @@ class HandView extends Backbone.View
       data:
         card_names:
           card_names
-      success: (response) ->
-        console.log(response)
+      success: (response) =>
 
-  removeCards: ->
-    cards = $(".cards .selected").remove()
+  selectedCards: ->
+    cards = $(".cards .selected")
     cards = _.sortBy cards.toArray(), (e) ->
       $(e).attr('data-click-time')
 

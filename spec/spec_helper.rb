@@ -23,3 +23,6 @@ RSpec.configure do |config|
   config.mock_framework = :mocha
 end
 
+Capybara.register_driver :webkit do |app|
+  Capybara::Webkit::Driver.new(app, :stdout => nil)
+end
