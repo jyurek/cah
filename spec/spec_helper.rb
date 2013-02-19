@@ -4,9 +4,10 @@ require 'capybara/dsl'
 require 'capybara/rspec'
 require './cah_game'
 
-require './spec/helpers/not_so_random_number_generator'
+Dir[File.expand_path(File.join(__FILE__, "..", "helpers", "*"))].each do |file|
+  require file
+end
 
-Capybara.app = CahGame.new
 Capybara.default_driver = :rack_test
 Capybara.javascript_driver = :webkit
 

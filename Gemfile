@@ -1,5 +1,6 @@
 source 'http://rubygems.org'
 
+gem 'rake'
 gem 'hiredis'
 gem "redis", ">= 2.2.0", :require => ["redis", "redis/connection/hiredis"]
 gem 'thin'
@@ -15,9 +16,10 @@ gem 'awesome_print'
 group :test do
   gem 'mocha'
   gem 'rspec'
-  gem 'jasmine'
   gem 'capybara'
   gem 'capybara-webkit'
   gem 'rack-test', require: 'rack/test'
   gem 'show_me_the_cookies'
+  gem 'jasmine', :path => "/Users/jyurek/Development/jasmine-gem"
+  gem 'evergreen'
 end

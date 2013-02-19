@@ -7,6 +7,8 @@ Dir.glob("./app/models/*") do |file|
   require file
 end
 
+class CardsNotInHandError < StandardError
+end
 
 class CahGame < Sinatra::Base
   helpers Sinatra::Cookies
@@ -14,9 +16,14 @@ class CahGame < Sinatra::Base
   serve_jst '/js/jst.js'
 
   set :views, File.dirname(__FILE__) + '/templates'
+  set :show_exceptions, false
+  set :raise_errors, true
+
+  before do
+    current_player
+  end
 
   get '/' do
-    current_player
     erb :home
   end
 
@@ -25,6 +32,7 @@ class CahGame < Sinatra::Base
     player = game.add_player(current_player)
     game.deal_hand_to(player)
     game.save
+    status 201
     game.to_json
   end
 
@@ -35,13 +43,16 @@ class CahGame < Sinatra::Base
 
   post '/games/:code/player' do |code|
     game = Game.find(code)
-    player = game.add_player(current_player)
-    game.deal_hand_to(player)
-    game.save
-    unless player.existing_player
-      pusher.trigger(game.code.to_s, "cah:new_player", nil)
+    if game.is_playing?(current_player)
+      status 409
+    else
+      player = game.add_player(current_player)
+      game.deal_hand_to(player)
+      game.save
+      pusher.trigger(game.code.to_s, "cah:new_player", player.cards)
+      status 201
+      player.to_json
     end
-    player.to_json
   end
 
   get '/games/:code/player' do |code|
@@ -51,11 +62,36 @@ class CahGame < Sinatra::Base
 
   post '/games/:code/answer' do |code|
     game = Game.find(code)
-    game.answer(current_player, params['card_names'])
-    pusher.trigger(game.code.to_s, "cah:answer_submitted",
-                   player: current_player, cards: params['card_names'])
-    game.save
-    game.to_json
+    if game.player_has_answered?(current_player)
+      status 409
+    elsif ! game.player_has_cards?(current_player, params['card_names'])
+      status 409
+    else
+      game.answer(current_player, params['card_names'])
+      pusher.trigger(game.code.to_s, "cah:answer_submitted",
+                     player: current_player, cards: Array(params['card_names']))
+      game.save
+      status 201
+    end
+  end
+
+  post '/games/:code/winner' do |code|
+    game = Game.find(code)
+    player_id = params['player_id']
+    if game.is_playing?(player_id)
+      if game.is_czar?(current_player)
+        winning_cards = game.hand_winner(player_id)
+        game.save
+        pusher.trigger(code, "cah:winner_chosen", {player: player_id, cards: Array(winning_cards)})
+        pusher.trigger(code, "cah:game_state", game.to_hash)
+        status 201
+      else
+        status 403
+      end
+    else
+      status 409
+      game.play_order[1..-1].to_json
+    end
   end
 
   def current_player
