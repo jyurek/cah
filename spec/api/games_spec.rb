@@ -222,9 +222,19 @@ describe 'Games' do
     end
 
     it 'sends an event to refresh the game state' do
-      expected_payload = @game.to_hash
-      expected_payload[:score]['1234-56-78'] = 1
-      pusher.events.last.should eq ['aaaaa', 'cah:game_state', expected_payload]
+      expected_gamestate = {
+        code: "aaaaa",
+        play_order: ["1234-56-78", "abcd-ef-gh"],
+        current_black_card: "Black Card",
+        players: {
+          "abcd-ef-gh"=> Player.new(["Card"] * 10),
+          "1234-56-78"=> Player.new(["Card"] * 10)
+        },
+        play_order: ["1234-56-78", "abcd-ef-gh"],
+        answers: {},
+        score: {"1234-56-78"=>1}
+      }
+      pusher.events.last.should eq ['aaaaa', 'cah:game_state', expected_gamestate]
     end
   end
 
