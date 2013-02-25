@@ -41,7 +41,7 @@ describe Game do
     game = Game.new
     game.current_black_card = "Card"
     game.players["12345"] = Player.new
-    game.to_json.should eq '{"code":"aaaaa","current_black_card":"Card","players":{"12345":[]},"play_order":[],"answers":{}}'
+    game.to_json.should eq '{"code":"aaaaa","current_black_card":"Card","players":{"12345":[]},"play_order":[],"answers":{},"score":{}}'
   end
 
   it 'gets the current black card from the black deck' do

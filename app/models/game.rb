@@ -59,6 +59,16 @@ class Game
     @answers = MultiJson.load(storage.fetch("answers") || "{}")
   end
 
+  def start_new_round
+    @current_black_card = black_cards.draw
+    current_czar = @play_order.shift
+    @answers = {}
+    @play_order.push(current_czar)
+    players.each do |player_id, player|
+      deal_hand_to(player)
+    end
+  end
+
   def is_playing?(player)
     self.players.has_key?(player)
   end

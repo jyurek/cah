@@ -30,7 +30,7 @@ class CahGame < Sinatra::Base
   post '/games' do
     game = Game.new
     player = game.add_player(current_player)
-    game.deal_hand_to(player)
+    game.start_new_round
     game.save
     status 201
     game.to_json
@@ -81,6 +81,7 @@ class CahGame < Sinatra::Base
     if game.is_playing?(player_id)
       if game.is_czar?(current_player)
         winning_cards = game.hand_winner(player_id)
+        game.start_new_round
         game.save
         pusher.trigger(code, "cah:winner_chosen", {player: player_id, cards: Array(winning_cards)})
         pusher.trigger(code, "cah:game_state", game.to_hash)

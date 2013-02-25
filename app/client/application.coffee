@@ -36,6 +36,7 @@ class Game
     @play_order = object.play_order
     @current_black_card = object.current_black_card
     @answers = object.answers
+    @score = object.score
 
   fetch: ->
     $.ajax "/games/#{@code}",
@@ -78,9 +79,14 @@ class Game
 class GameView extends Backbone.View
   initialize: ->
     @model.events.bind "cah:answer_submitted", @answerReceived
+    @model.events.bind "cah:game_state", @setState
 
   answerReceived: (data) =>
     @model.answers[data['player']] = data['cards']
+    @render()
+
+  setState: (data) =>
+    @model.populateWith(data)
     @render()
 
   render: ->
@@ -123,14 +129,14 @@ class CzarView extends Backbone.View
   selectAnswer: (event) ->
     $('ol.answers li').removeClass("selected-answer")
     $(event.currentTarget).addClass("selected-answer")
+
+  chooseWinner: ->
     $.ajax "/games/#{@model.code}/winner",
       type: "POST",
       dataType: "json",
       data:
-        $('ol.answers .selected-answer')['data-player-id']
-      success: (response) ->
-
-  chooseWinner: ->
+        player_id:
+          $('ol.answers .selected-answer').attr('data-player-id')
 
 class HandView extends Backbone.View
   events:
